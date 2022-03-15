@@ -23,6 +23,7 @@ using System.Linq;
 using Swashbuckle.AspNetCore.Annotations;
 using AutoMapper;
 using ContactBookAPI.Core.Interface.Services;
+using ContactBookAPI.Resources;
 
 namespace ContactBookAPI.Controllers
 {
@@ -45,99 +46,87 @@ namespace ContactBookAPI.Controllers
             _mapper = mapper;
         }
 
-        [SwaggerResponse(statusCode: 200, description: "Contacts Retrieved successfully")]
-        [SwaggerResponse(statusCode: 404, description: "Contacts not found")]
+        /// <summary>
+        /// Lists all contacts.
+        /// </summary>
+        /// <returns>List of contacts.</returns>
+        [ProducesResponseType(typeof(IEnumerable<ContactResource>), 200)]
+        [ProducesResponseType(typeof(ErrorResource), 404)]
         [HttpGet]
-        public async Task<IActionResult> Get([FromServices] IContactService contactService)
+        public async Task<IActionResult> Get()
         {
-            try
+            var response = await _contactService.ListAsync();
+
+            if (response is null)
             {
-                var response = await contactService.GetAllAsync();
-                if (response is null)
-                {
-                    return NotFound();
-                }
-                return Ok(new Response<IEnumerable<IContact>>(response));
+                return NotFound(new ErrorResource("List of Companies not found."));
             }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    "Error Retrieving Data.");
-            }
+
+            var resource = _mapper.Map<IEnumerable<IContact>, IEnumerable<ContactResource>>(response);
+            return Ok(resource);
         }
 
-        [SwaggerResponse(statusCode: 200, description: "Contacts Retrieved successfully")]
-        [SwaggerResponse(statusCode: 404, description: "Contacts not found")]
+        /// <summary>
+        /// Lists all contacts by the company and contactbook identifier.
+        /// </summary>
+        /// <returns>List of contacts.</returns>
+        [ProducesResponseType(typeof(IEnumerable<ContactResource>), 200)]
+        [ProducesResponseType(typeof(ErrorResource), 404)]
         [HttpGet("{companyId}, {contactBookId}")]
-        public async Task<IActionResult> Get(int companyId, int contactBookId, [FromServices] IContactService contactService)
+        public async Task<IActionResult> Get(int companyId, int contactBookId)
         {
-            try
+            var response = await _contactService.FindByContactBookAndCompanyAsync(companyId, contactBookId);
+
+            if (response is null)
             {
-                var response = await contactService.GetByCompanyAndContactBook(companyId, contactBookId);
-                if (response is null)
-                {
-                    return NotFound();
-                }
-                return Ok(new Response<IEnumerable<IContact>>(response));
-            }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    "Error Retrieving Data.");
+                return NotFound(new ErrorResource("List of Contacts is Null."));
             }
 
+            var resource = _mapper.Map<IEnumerable<IContact>, IEnumerable<ContactResource>>(response);
+            return Ok(resource);
         }
 
-        [SwaggerResponse(statusCode: 200, description: "Contacts Retrieved successfully")]
-        [SwaggerResponse(statusCode: 404, description: "Contacts not found")]
+        /// <summary>
+        /// Lists all contacts by the search string.
+        /// </summary>
+        /// <returns>List of contacts.</returns>
+        [ProducesResponseType(typeof(IEnumerable<ContactResource>), 200)]
+        [ProducesResponseType(typeof(ErrorResource), 404)]
         [HttpGet("{searchString}")]
-        public async Task<IActionResult> Get(int pageRows, int pageNumber, string searchString, [FromServices] IContactService contactService)
+        public async Task<IActionResult> Get(int pageRows, int pageNumber, string searchString)
         {
-            try
-            {
-                var validFilter = new PaginationFilter(pageNumber, pageRows);
-                var registersCount = contactService.RegistersCount(searchString);
-                var pagedData = await contactService.GetAsync(validFilter.PageSize, validFilter.PageNumber, searchString);
+            var validFilter = new PaginationFilter(pageNumber, pageRows);
+            var registersCount = _contactService.RegistersCount(searchString);
+            var response = await _contactService.FindBySearchStringAsync(validFilter.PageSize, validFilter.PageNumber, searchString);
 
-                if (pagedData is null)
-                {
-                    return NotFound();
-                }
-                return Ok(new PagedResponse<IEnumerable<IContact>>(pagedData, validFilter.PageNumber, validFilter.PageSize, registersCount.Result));
-            }
-            catch (Exception)
+            if (response is null)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    "Error Retrieving Data.");
+                return NotFound(new ErrorResource("List of Contacts is Null."));
             }
+
+            var resource = _mapper.Map<IEnumerable<IContact>, IEnumerable<ContactResource>>(response);
+            return Ok(new PagedResponse<IEnumerable<ContactResource>>(resource, validFilter.PageNumber, validFilter.PageSize, registersCount.Result));
         }
 
-        [SwaggerResponse(statusCode: 201, description: "Success creating the new contacts")]
-        [SwaggerResponse(statusCode: 400, description: "Failed to create the new contacts")]
+        /// <summary>
+        /// Saves the new contacts.
+        /// </summary>
+        /// <param name="file">.CSV Contact file.</param>
+        /// <returns>Response for the request.</returns>
+        [ProducesResponseType(typeof(CompanyResource), 201)]
+        [ProducesResponseType(typeof(ErrorResource), 400)]
         [HttpPost]
-        public async Task<IActionResult> UploadFile(IFormFile file, [FromServices] IContactService contactService, [FromServices] ICompanyService companyService)
+        public async Task<IActionResult> UploadFile(IFormFile file)
         {
-            try
+            var response = await _contactService.UploadCSVFile(file);
+
+            if (!response.Success)
             {
-                var CSVData = await contactService.GetDataFromCSVFile(file);
+                return BadRequest(new ErrorResource(response.Message));
+            }
 
-                if (CSVData == null)
-                {
-                    return BadRequest();
-                }
-                
-                var companyList = await companyService.CompanyList();
-                var contactIdList = await contactService.ContactIdList();
-                await contactService.UploadFile(CSVData, companyList, contactIdList);
-
-                return Ok();
+            var resource = _mapper.Map<IEnumerable<IContact>, IEnumerable<ContactResource>>(response);
+            return Ok(resource);
         }
-            catch (Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    "Error Uploading Data.");
-    }
-
-}
     }
 }

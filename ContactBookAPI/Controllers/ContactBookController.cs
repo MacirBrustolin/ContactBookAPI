@@ -31,120 +31,111 @@ namespace ContactBookAPI.Controllers
             _mapper = mapper;
         }
 
-        [SwaggerResponse(statusCode: 201, description: "Success creating a new contact book")]
-        [SwaggerResponse(statusCode: 400, description: "Failed to create a new contact book")]
+        /// <summary>
+        /// Saves a new Contact Book.
+        /// </summary>
+        /// <param name="resource">Contact Book data.</param>
+        /// <returns>Response for the request.</returns>
+        [ProducesResponseType(typeof(ContactBookResource), 201)]
+        [ProducesResponseType(typeof(ErrorResource), 400)]
         [HttpPost]
-        public async Task<IActionResult> Post(SaveContactBookResource contactBook, [FromServices] IContactBookService contactBookService)
+        public async Task<IActionResult> Post([FromBody] SaveContactBookResource resource)
         {
-            try
-            {
-                if (contactBook == null)
-                {
-                    return BadRequest();
-                }
+            var contactBook = _mapper.Map<SaveContactBookResource, IContactBook>(resource);
+            var result = await _contactBookService.AddAsync(contactBook);
 
-                var response = await contactBookService.AddAsync(contactBook);
-                return CreatedAtAction(nameof(Get), new { id = response.Id }, response);
-            }
-            catch (Exception ex)
+            if (!result.Success)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    $"Error Creating Data. {ex.Message}");
+                return BadRequest(new ErrorResource(result.Message));
             }
+
+            var contactBookResource = _mapper.Map<IContactBook, ContactBookResource>(result.Resource);
+            return Ok(contactBookResource);
         }
 
-        [SwaggerResponse(statusCode: 200, description: "Contact Book Updated successfully")]
-        [SwaggerResponse(statusCode: 404, description: "Contact Book not found")]
+        /// <summary>
+        /// Updates an existing contact book according to an identifier.
+        /// </summary>
+        /// <param name="id">Contact Book identifier.</param>
+        /// <param name="resource">Updated contact Book data.</param>
+        /// <returns>Response for the request.</returns>
+        [ProducesResponseType(typeof(ContactBookResource), 200)]
+        [ProducesResponseType(typeof(ErrorResource), 400)]
         [HttpPut]
-        public async Task<IActionResult> Update(int id, SaveContactBookResource contactBook, [FromServices] IContactBookService contactBookService)
+        public async Task<IActionResult> Update(int id, SaveContactBookResource resource)
         {
-            try
-            {
-                if (id != contactBook.Id)
-                {
-                    return BadRequest("Company ID mismatch");
-                }
+            var company = _mapper.Map<SaveContactBookResource, IContactBook>(resource);
+            var result = await _contactBookService.Update(id, company);
 
-                var contackBookToUpdate = await contactBookService.GetAsync(id);
-                if (contackBookToUpdate == null)
-                {
-                    return NotFound($"Company with Id = {id} not found");
-                }
-
-                await contactBookService.UpdateAsync(id, contactBook.ToContactBook());
-                return Ok();
-            }
-            catch (Exception ex)
+            if (!result.Success)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    $"Error Updating Data. {ex.Message}");
+                return BadRequest(new ErrorResource(result.Message));
             }
+
+            var contactBookResource = _mapper.Map<IContactBook, ContactBookResource>(result.Resource);
+            return Ok(contactBookResource);
         }
 
-        [SwaggerResponse(statusCode: 200, description: "Contact Book Deleted successfully")]
-        [SwaggerResponse(statusCode: 404, description: "Contact Book not found")]
+        /// <summary>
+        /// Deletes a given contact book according to an identifier.
+        /// </summary>
+        /// <param name="id">Contact Book identifier.</param>
+        /// <returns>Response for the request.</returns>
+        [ProducesResponseType(typeof(ContactBookResource), 200)]
+        [ProducesResponseType(typeof(ErrorResource), 400)]
         [HttpDelete]
-        public async Task<IActionResult> Delete(int id, [FromServices] IContactBookService contactBookService)
+        public async Task<IActionResult> Delete(int id)
         {
-            try
+            var result = await _contactBookService.Remove(id);
+
+            if (!result.Success)
             {
-                var contactBookToDelete = await contactBookService.GetAsync(id);
-                if (contactBookToDelete is null)
-                {
-                    return NotFound();
-                }
-                await contactBookService.DeleteAsync(id);
-                return Ok();
+                return BadRequest(new ErrorResource(result.Message));
             }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    $"Error Deleting Data. {ex.Message}");
-            }
+
+            var companyResource = _mapper.Map<IContactBook, ContactBookResource>(result.Resource);
+            return Ok(companyResource);
         }
 
-        [SwaggerResponse(statusCode: 200, description: "Contact Books Retrieved successfully")]
-        [SwaggerResponse(statusCode: 404, description: "Contact Books not found")]
+        /// <summary>
+        /// Lists all contact books.
+        /// </summary>
+        /// <returns>List of contact books.</returns>
+        [ProducesResponseType(typeof(IEnumerable<ContactBookResource>), 200)]
+        [ProducesResponseType(typeof(ErrorResource), 404)]
         [HttpGet]
-        public async Task<IActionResult> Get([FromServices] IContactBookService contactBookService)
+        public async Task<IActionResult> Get()
         {
-            try
+            var response = await _contactBookService.ListAsync();
+
+            if (response is null)
             {
-                var response = await contactBookService.GetAllAsync();
-                if (response is null)
-                {
-                    return NotFound();
-                }
-                var resource = _mapper.Map<IEnumerable<IContactBook>, IEnumerable<ContactBookResource>>(response);
-                return Ok(new Response<IEnumerable<ContactBookResource>>(resource));
+                return NotFound(new ErrorResource("List of Companies not found."));
             }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    $"Error Retrieving Data. {ex.Message}");
-            }
+
+            var resource = _mapper.Map<IEnumerable<IContactBook>, IEnumerable<ContactBookResource>>(response);
+            return Ok(resource);
         }
 
-        [SwaggerResponse(statusCode: 200, description: "Contact Book Retrieved successfully")]
-        [SwaggerResponse(statusCode: 404, description: "Contact Book not found")]
+        /// <summary>
+        /// List a given contact book according to an identifier.
+        /// </summary>
+        /// <param name="id">Contact book identifier.</param>
+        /// <returns>Response for the request.</returns>
+        [ProducesResponseType(typeof(ContactBookResource), 200)]
+        [ProducesResponseType(typeof(ErrorResource), 400)]
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id, [FromServices] IContactBookService contactBookService)
+        public async Task<IActionResult> Get(int id)
         {
-            try
+            var result = await _contactBookService.FindByIdAsync(id);
+
+            if (!result.Success)
             {
-                var response = await contactBookService.GetAsync(id);
-                if (response is null)
-                {
-                    return NotFound();
-                }
-                var resource = _mapper.Map<IContactBook, ContactBookResource>(response);
-                return Ok(new Response<ContactBookResource>(resource));
+                return BadRequest(new ErrorResource(result.Message));
             }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    $"Error Retrieving Data. {ex.Message}");
-            }
+
+            var contactBookResource = _mapper.Map<IContactBook, ContactBookResource>(result.Resource);
+            return Ok(contactBookResource);
         }
     }
 }

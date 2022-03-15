@@ -33,38 +33,38 @@ namespace ContactBookAPI.Controllers
             _mapper = mapper;
         }
 
-        [SwaggerResponse(statusCode: 201, description: "Success creating a company")]
-        [SwaggerResponse(statusCode: 400, description: "Failed to create a new company")]
+        /// <summary>
+        /// Saves a new company.
+        /// </summary>
+        /// <param name="resource">Company data.</param>
+        /// <returns>Response for the request.</returns>
+        [ProducesResponseType(typeof(CompanyResource), 201)]
+        [ProducesResponseType(typeof(ErrorResource), 400)]
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] SaveCompanyResource resource, [FromServices] ICompanyService companyService)
+        public async Task<IActionResult> Post([FromBody] SaveCompanyResource resource)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState.GetErrorMessages());
+            var company = _mapper.Map<SaveCompanyResource, ICompany>(resource);
+            var result = await _companyService.AddAsync(company);
 
-            try
+            if (!result.Success)
             {
-                var company = _mapper.Map<SaveCompanyResource, ICompany>(resource);
-
-                if (company == null)
-                {
-                    return BadRequest(new ErrorResource("Company is not defined."));
-                }
-
-                var response = await companyService.AddAsync(company);
-                return CreatedAtAction(nameof(Get), new { id = response.Resource.Id }, response);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    new ErrorResource(ex.Message));
+                return BadRequest(new ErrorResource(result.Message));
             }
 
+            var companyResource = _mapper.Map<ICompany, CompanyResource>(result.Resource);
+            return Ok(companyResource);
         }
 
-        [SwaggerResponse(statusCode: 200, description: "Company Updated successfully")]
-        [SwaggerResponse(statusCode: 404, description: "Company not found")]
+        /// <summary>
+        /// Updates an existing company according to an identifier.
+        /// </summary>
+        /// <param name="id">Company identifier.</param>
+        /// <param name="resource">Updated company data.</param>
+        /// <returns>Response for the request.</returns>
+        [ProducesResponseType(typeof(CompanyResource), 200)]
+        [ProducesResponseType(typeof(ErrorResource), 400)]
         [HttpPut]
-        public async Task<IActionResult> Update(int id, [FromBody] SaveCompanyResource resource, [FromServices] ICompanyService companyService)
+        public async Task<IActionResult> Update(int id, [FromBody] SaveCompanyResource resource)
         {
             var company = _mapper.Map<SaveCompanyResource, ICompany>(resource);
             var result = await _companyService.Update(id, company);
@@ -79,12 +79,17 @@ namespace ContactBookAPI.Controllers
 
         }
 
-        [SwaggerResponse(statusCode: 200, description: "Company Deleted successfully")]
-        [SwaggerResponse(statusCode: 404, description: "Company not found")]
+        /// <summary>
+        /// Deletes a given company according to an identifier.
+        /// </summary>
+        /// <param name="id">Company identifier.</param>
+        /// <returns>Response for the request.</returns>
+        [ProducesResponseType(typeof(CompanyResource), 200)]
+        [ProducesResponseType(typeof(ErrorResource), 400)]
         [HttpDelete]
-        public async Task<IActionResult> Delete(int id, [FromServices] ICompanyService companyService)
+        public async Task<IActionResult> Delete(int id)
         {
-            var result = await companyService.Remove(id);
+            var result = await _companyService.Remove(id);
 
             if (!result.Success)
             {
@@ -100,11 +105,12 @@ namespace ContactBookAPI.Controllers
         /// Lists all companies.
         /// </summary>
         /// <returns>List os companies.</returns>
-        [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<CompanyResource>), 200)]
-        public async Task<IActionResult> Get([FromServices] ICompanyService companyService)
+        [ProducesResponseType(typeof(ErrorResource), 404)]
+        [HttpGet]
+        public async Task<IActionResult> Get()
         {
-            var response = await companyService.ListAsync();
+            var response = await _companyService.ListAsync();
 
             if (response is null)
             {
@@ -116,12 +122,17 @@ namespace ContactBookAPI.Controllers
 
         }
 
-        [SwaggerResponse(statusCode: 200, description: "Company Retrieved successfully")]
-        [SwaggerResponse(statusCode: 404, description: "Company not found")]
+        /// <summary>
+        /// List a given company according to an identifier.
+        /// </summary>
+        /// <param name="id">Company identifier.</param>
+        /// <returns>Response for the request.</returns>
+        [ProducesResponseType(typeof(CompanyResource), 200)]
+        [ProducesResponseType(typeof(ErrorResource), 400)]
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id, [FromServices] ICompanyService companyService)
+        public async Task<IActionResult> Get(int id)
         {
-            var result = await companyService.FindByIdAsync(id);
+            var result = await _companyService.FindByIdAsync(id);
 
             if (!result.Success)
             {
