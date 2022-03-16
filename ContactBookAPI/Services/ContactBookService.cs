@@ -1,5 +1,8 @@
-﻿using ContactBookAPI.Core.Domain.ContactBook;
+﻿using ContactBookAPI.Core.Domain.Communication;
+using ContactBookAPI.Core.Domain.ContactBook;
+using ContactBookAPI.Core.Interface.ContactBook;
 using ContactBookAPI.Core.Interface.Services;
+using ContactBookAPI.Repository.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,29 +12,82 @@ namespace ContactBookAPI.Services
 {
     public class ContactBookService : IContactBookService
     {
-        public Task AddAsync(ContactBook contactBook)
+        private readonly IContactBookRepository _contactBookRepository;
+
+        public ContactBookService(IContactBookRepository contactBookRepository)
         {
-            throw new NotImplementedException();
+            _contactBookRepository = contactBookRepository;
+        }
+        public async Task<ContactBookResponse> AddAsync(ContactBook contactBook)
+        {
+            try
+            {
+                return new ContactBookResponse(await _contactBookRepository.SaveAsync(contactBook));
+
+            }
+            catch (Exception ex)
+            {
+                return new ContactBookResponse($"An error occurred when saving the contact book: {ex.Message}");
+            }
         }
 
-        public Task<ContactBook> FindByIdAsync(int id)
+        public async Task<ContactBookResponse> FindByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var existingContactBook = await _contactBookRepository.GetAsync(id);
+
+                if (existingContactBook == null)
+                    return new ContactBookResponse("Contact Book not Found.");
+
+                return new ContactBookResponse(existingContactBook);
+            }
+            catch (Exception ex)
+            {
+                return new ContactBookResponse($"An error occurred when retrieving the contact book: {ex.Message}");
+            }
         }
 
-        public Task<IEnumerable<ContactBook>> ListAsync()
+        public async Task<IEnumerable<ContactBook>> ListAsync()
         {
-            throw new NotImplementedException();
+            return await _contactBookRepository.GetAllAsync();
         }
 
-        public void Remove(ContactBook contactBook)
+        public async Task<ContactBookResponse> Remove(int id)
         {
-            throw new NotImplementedException();
+            var existingContactBook = await _contactBookRepository.GetAsync(id);
+
+            if (existingContactBook == null)
+                return new ContactBookResponse("Contact book not found.");
+
+            try
+            {
+                await _contactBookRepository.DeleteAsync(id);
+                return new ContactBookResponse(existingContactBook);
+            }
+            catch (Exception ex)
+            {
+                return new ContactBookResponse($"An error occurred when deleting the company book: {ex.Message}");
+            }
         }
 
-        public void Update(ContactBook contactBook)
+        public async Task<ContactBookResponse> Update(int id, ContactBook contactBook)
         {
-            throw new NotImplementedException();
+            var existingContactBook = await _contactBookRepository.GetAsync(id);
+
+            if (existingContactBook == null)
+                return new ContactBookResponse("Contact book not found.");
+
+            try
+            {
+                await _contactBookRepository.UpdateAsync(id, contactBook);
+
+                return new ContactBookResponse(contactBook);
+            }
+            catch (Exception ex)
+            {
+                return new ContactBookResponse($"An error occurred when updating the company book: {ex.Message}");
+            }
         }
     }
 }

@@ -43,7 +43,7 @@ namespace ContactBookAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] SaveCompanyResource resource)
         {
-            var company = _mapper.Map<SaveCompanyResource, ICompany>(resource);
+            var company = _mapper.Map<SaveCompanyResource, Company>(resource);
             var result = await _companyService.AddAsync(company);
 
             if (!result.Success)
@@ -51,7 +51,7 @@ namespace ContactBookAPI.Controllers
                 return BadRequest(new ErrorResource(result.Message));
             }
 
-            var companyResource = _mapper.Map<ICompany, CompanyResource>(result.Resource);
+            var companyResource = _mapper.Map<Company, CompanyResource>(result.Resource);
             return Ok(companyResource);
         }
 
@@ -66,7 +66,7 @@ namespace ContactBookAPI.Controllers
         [HttpPut]
         public async Task<IActionResult> Update(int id, [FromBody] SaveCompanyResource resource)
         {
-            var company = _mapper.Map<SaveCompanyResource, ICompany>(resource);
+            var company = _mapper.Map<SaveCompanyResource, Company>(resource);
             var result = await _companyService.Update(id, company);
 
             if (!result.Success)
@@ -74,7 +74,7 @@ namespace ContactBookAPI.Controllers
                 return BadRequest(new ErrorResource(result.Message));
             }
 
-            var categoryResource = _mapper.Map<ICompany, CompanyResource>(result.Resource);
+            var categoryResource = _mapper.Map<Company, CompanyResource>(result.Resource);
             return Ok(categoryResource);
 
         }
@@ -96,7 +96,7 @@ namespace ContactBookAPI.Controllers
                 return BadRequest(new ErrorResource(result.Message));
             }
 
-            var companyResource = _mapper.Map<ICompany, CompanyResource>(result.Resource);
+            var companyResource = _mapper.Map<Company, CompanyResource>(result.Resource);
             return Ok(companyResource);
 
         }
@@ -117,7 +117,7 @@ namespace ContactBookAPI.Controllers
                 return NotFound(new ErrorResource("List of Companies not found."));
             }
 
-            var resource = _mapper.Map<IEnumerable<ICompany>, IEnumerable<CompanyResource>>(response);
+            var resource = _mapper.Map<IEnumerable<Company>, IEnumerable<CompanyResource>>(response);
             return Ok(resource);
 
         }
@@ -139,7 +139,7 @@ namespace ContactBookAPI.Controllers
                 return BadRequest(new ErrorResource(result.Message));
             }
 
-            var companyResource = _mapper.Map<ICompany, CompanyResource>(result.Resource);
+            var companyResource = _mapper.Map<Company, CompanyResource>(result.Resource);
             return Ok(companyResource);
 
         }

@@ -12,6 +12,7 @@ using ContactBookAPI.Repository;
 using ContactBookAPI.Repository.Interface;
 using ContactBookAPI.Core.Interface.Services;
 using ContactBookAPI.Service;
+using ContactBookAPI.Services;
 
 namespace ContactBookAPI
 {
@@ -46,6 +47,8 @@ namespace ContactBookAPI
             services.AddScoped<ICompanyRepository, CompanyRepository>();
             services.AddScoped<IContactRepository, ContactRepository>();
 
+            services.AddScoped<ICompanyService, CompanyService>();
+            services.AddScoped<IContactBookService, ContactBookService>();
             services.AddScoped<IContactService, ContactService>();
 
             services.AddAutoMapper(typeof(Startup));

@@ -40,7 +40,7 @@ namespace ContactBookAPI.Dao
         {
         }
 
-        public ContactDao(IContact contact)
+        public ContactDao(Contact contact)
         {
             Id = contact.Id;
             ContactBookId = contact.ContactBookId;
@@ -51,6 +51,6 @@ namespace ContactBookAPI.Dao
             Address = contact.Address;
         }
 
-        public IContact Export() => new Contact(Id, ContactBookId, ContactBook, CompanyId, Company, Name, Phone, Email, Address);
+        public Contact Export() => new Contact(Id, ContactBookId, ContactBook, CompanyId, Company, Name, Phone, Email, Address);
     }
 }

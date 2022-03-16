@@ -23,7 +23,7 @@ namespace ContactBookAPI.Repository
         }
 
 
-        public async Task<IContactBook> SaveAsync(IContactBook contactBook)
+        public async Task<ContactBook> SaveAsync(ContactBook contactBook)
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
             var dao = new ContactBookDao(contactBook);
@@ -53,7 +53,7 @@ namespace ContactBookAPI.Repository
             connection.Close();
         }
 
-        public async Task UpdateAsync(int id, IContactBook contactBook)
+        public async Task UpdateAsync(int id, ContactBook contactBook)
         {
             var dao = new ContactBookDao(contactBook) { Id = id };
 
@@ -63,7 +63,7 @@ namespace ContactBookAPI.Repository
         }
 
 
-        public async Task<IEnumerable<IContactBook>> GetAllAsync()
+        public async Task<IEnumerable<ContactBook>> GetAllAsync()
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
 
@@ -73,7 +73,7 @@ namespace ContactBookAPI.Repository
             return result?.Select(item => item.Export());
         }
 
-        public async Task<IContactBook> GetAsync(int id)
+        public async Task<ContactBook> GetAsync(int id)
         {
             var list = await GetAllAsync();
 

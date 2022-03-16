@@ -96,7 +96,7 @@ namespace ContactBookAPI.Controllers
         public async Task<IActionResult> Get(int pageRows, int pageNumber, string searchString)
         {
             var validFilter = new PaginationFilter(pageNumber, pageRows);
-            var registersCount = _contactService.RegistersCount(searchString);
+            var registersCount = _contactService.ContactRegistersCount(searchString);
             var response = await _contactService.FindBySearchStringAsync(validFilter.PageSize, validFilter.PageNumber, searchString);
 
             if (response is null)
@@ -111,18 +111,18 @@ namespace ContactBookAPI.Controllers
         /// <summary>
         /// Saves the new contacts.
         /// </summary>
-        /// <param name="file">.CSV Contact file.</param>
+        /// <param name="file">CSV Contact file.</param>
         /// <returns>Response for the request.</returns>
         [ProducesResponseType(typeof(CompanyResource), 201)]
         [ProducesResponseType(typeof(ErrorResource), 400)]
         [HttpPost]
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
-            var response = await _contactService.UploadCSVFile(file);
+            var response = await _contactService.UploadAsync(file);
 
-            if (!response.Success)
+            if (response is null)
             {
-                return BadRequest(new ErrorResource(response.Message));
+                return BadRequest(new ErrorResource("Problem when uploading the list of contacts."));
             }
 
             var resource = _mapper.Map<IEnumerable<IContact>, IEnumerable<ContactResource>>(response);

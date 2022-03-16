@@ -17,11 +17,11 @@ namespace ContactBookAPI.Mapping
     {
         public ModelToResourceProfile (){
 
-            CreateMap<ICompany, CompanyResource>();
+            CreateMap<Company, CompanyResource>();
 
-            CreateMap<IContactBook, ContactBookResource>();
+            CreateMap<ContactBook, ContactBookResource>();
 
-            CreateMap<IContact, ContactResource>();
+            CreateMap<Contact, ContactResource>();
         }
         
     }

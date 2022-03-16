@@ -10,14 +10,16 @@ namespace ContactBookAPI.Repository.Interface
 {
     public interface IContactRepository
     {
-        Task<IContact> SaveAsync(IContact contact);
-        Task UpdateAsync(int id, IContact contact);
-        Task<IEnumerable<IContact>> GetAllAsync();
-        Task<IEnumerable<IContact>> GetAsync(int pageRows, int pageNumber, string searchString);
+        Task<Contact> SaveAsync(Contact contact);
+        Task UpdateAsync(int id, Contact contact);
+        Task<IEnumerable<Contact>> GetAllAsync();
+        Task<Contact> GetByIdAsync(int id);
+        Task<IEnumerable<Contact>> GetAsync(int pageRows, int pageNumber, string searchString);
         Task<List<ContactCsv>> GetDataFromCSVFile(IFormFile file);
+        Task DeleteAsync(int id);
         Task<int> RegistersCount(string searchString);
-        Task<IEnumerable<IContact>> GetByCompanyAndContactBook(int companyId, int contactBookId);
+        Task<IEnumerable<Contact>> GetByCompanyAndContactBook(int companyId, int contactBookId);
         Task<List<int>> ContactIdList();
-        Task UploadFile(List<ContactCsv> records, List<int> companyList, List<int> contactIdList);
+        //Task UploadFile(List<ContactCsv> records, List<int> companyList, List<int> contactIdList);
     }
 }

@@ -27,7 +27,7 @@ namespace ContactBookAPI.Repository
             this.databaseConfig = databaseConfig;
         }
 
-        public async Task<ICompany> SaveAsync(ICompany company)
+        public async Task<Company> SaveAsync(Company company)
         {
             var existingContactBookId = await _contactBookRepository.GetAsync(company.ContactBookId);
             if (existingContactBookId == null)
@@ -59,7 +59,7 @@ namespace ContactBookAPI.Repository
             connection.Close();
         }
 
-        public async Task UpdateAsync(int id, ICompany company)
+        public async Task UpdateAsync(int id, Company company)
         {
             var dao = new CompanyDao(company) { Id = id };
 
@@ -75,7 +75,7 @@ namespace ContactBookAPI.Repository
             await connection.UpdateAsync(dao);
         }
 
-        public async Task<IEnumerable<ICompany>> GetAllAsync()
+        public async Task<IEnumerable<Company>> GetAllAsync()
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
 
@@ -89,7 +89,7 @@ namespace ContactBookAPI.Repository
             return result?.Select(item => item.Export()); ;
         }
 
-        public async Task<ICompany> GetAsync(int id)
+        public async Task<Company> GetAsync(int id)
         {
 
             var list = await GetAllAsync();

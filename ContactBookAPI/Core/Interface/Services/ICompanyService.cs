@@ -10,10 +10,10 @@ namespace ContactBookAPI.Core.Interface.Services
 {
     public interface ICompanyService
     {
-        Task<IEnumerable<ICompany>> ListAsync();
+        Task<IEnumerable<Company>> ListAsync();
         Task<CompanyResponse> FindByIdAsync(int id);
-        Task<CompanyResponse> AddAsync(ICompany company);
-        Task<CompanyResponse> Update(int id, ICompany company);
+        Task<CompanyResponse> AddAsync(Company company);
+        Task<CompanyResponse> Update(int id, Company company);
         Task<CompanyResponse> Remove(int id);
     }
 }

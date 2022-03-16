@@ -7,11 +7,11 @@ namespace ContactBookAPI.Repository.Interface
 {
     public interface ICompanyRepository
     {
-        Task<ICompany> SaveAsync(ICompany company);
+        Task<Company> SaveAsync(Company company);
         Task DeleteAsync(int id);
-        Task UpdateAsync(int id, ICompany company);
-        Task<IEnumerable<ICompany>> GetAllAsync();
-        Task<ICompany> GetAsync(int id);
+        Task UpdateAsync(int id, Company company);
+        Task<IEnumerable<Company>> GetAllAsync();
+        Task<Company> GetAsync(int id);
         //Task<List<int>> CompanyList();
     }
 }

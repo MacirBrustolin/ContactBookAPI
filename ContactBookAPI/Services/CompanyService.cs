@@ -21,8 +21,13 @@ namespace ContactBookAPI.Service
             _contactBookRepository = contactBookRepository;
         }
 
-        public async Task<CompanyResponse> AddAsync(ICompany company)
+        public async Task<CompanyResponse> AddAsync(Company company)
         {
+            var existingContactBook = await _contactBookRepository.GetAsync(company.ContactBookId);
+
+            if (existingContactBook == null)
+                return new CompanyResponse("Contact Book not Valid.");
+
             try
             {
                 return new CompanyResponse(await _companyRepository.SaveAsync(company));
@@ -30,20 +35,31 @@ namespace ContactBookAPI.Service
             }
             catch (Exception ex)
             {
-                // Do some logging stuff
-                return new CompanyResponse($"An error occurred when saving the category: {ex.Message}");
-            }
-            
+                return new CompanyResponse($"An error occurred when saving the company: {ex.Message}");
+            } 
         }
 
         public async Task<CompanyResponse> FindByIdAsync(int id)
         {
-            return new CompanyResponse(await _companyRepository.GetAsync(id));
+            try
+            {
+                var existingCompany = await _companyRepository.GetAsync(id);
+
+                if (existingCompany == null)
+                    return new CompanyResponse("Company not Found.");
+
+                return new CompanyResponse(existingCompany);
+            }
+            catch (Exception ex)
+            {
+                return new CompanyResponse($"An error occurred when retrieving the company: {ex.Message}");
+            }
+            
         }
 
-        public async Task<IEnumerable<ICompany>> ListAsync()
+        public async Task<IEnumerable<Company>> ListAsync()
         {
-            return await _companyRepository.GetAllAsync();
+                return await _companyRepository.GetAllAsync();
         }
 
         public async Task<CompanyResponse> Remove(int id)
@@ -51,7 +67,7 @@ namespace ContactBookAPI.Service
             var existingCompany = await _companyRepository.GetAsync(id);
 
             if (existingCompany == null)
-                return new CompanyResponse("Category not found.");
+                return new CompanyResponse("Company not found.");
 
             try
             {
@@ -60,17 +76,16 @@ namespace ContactBookAPI.Service
             }
             catch (Exception ex)
             {
-                // Do some logging stuff
-                return new CompanyResponse($"An error occurred when deleting the category: {ex.Message}");
+                return new CompanyResponse($"An error occurred when deleting the company: {ex.Message}");
             }
         }
 
-        public async Task<CompanyResponse> Update(int id, ICompany company)
+        public async Task<CompanyResponse> Update(int id, Company company)
         {
-            var existingCompany = await _companyRepository.GetAsync(company.Id);
+            var existingCompany = await _companyRepository.GetAsync(id);
 
             if (existingCompany == null)
-                return new CompanyResponse("Category not found.");
+                return new CompanyResponse("Company not found.");
 
             try
             {
@@ -80,8 +95,7 @@ namespace ContactBookAPI.Service
             }
             catch (Exception ex)
             {
-                // Do some logging stuff
-                return new CompanyResponse($"An error occurred when updating the category: {ex.Message}");
+                return new CompanyResponse($"An error occurred when updating the company: {ex.Message}");
             }
         }
     }

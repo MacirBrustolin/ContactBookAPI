@@ -29,7 +29,7 @@ namespace ContactBookAPI.Dao
         {
         }
 
-        public CompanyDao(ICompany company)
+        public CompanyDao(Company company)
         {
             Id = company.Id;
             ContactBookId = company.ContactBookId;
@@ -37,6 +37,6 @@ namespace ContactBookAPI.Dao
             Name = company.Name;
         }
 
-        public ICompany Export() => new Company(Id, ContactBookId, ContactBook, Name);
+        public Company Export() => new Company(Id, ContactBookId, ContactBook, Name);
     }
 }

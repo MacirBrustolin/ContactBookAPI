@@ -30,7 +30,7 @@ namespace ContactBookAPI.Repository
             this.databaseConfig = databaseConfig;
         }
 
-        public async Task<IContact> SaveAsync(IContact contact)
+        public async Task<Contact> SaveAsync(Contact contact)
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
             var dao = new ContactDao(contact);
@@ -40,7 +40,7 @@ namespace ContactBookAPI.Repository
             return dao.Export();
         }
 
-        public async Task UpdateAsync(int id, IContact contact)
+        public async Task UpdateAsync(int id, Contact contact)
         {
             var dao = new ContactDao(contact) { Id = id };
 
@@ -52,7 +52,7 @@ namespace ContactBookAPI.Repository
             await connection.UpdateAsync(dao);
         }
 
-        public async Task<IEnumerable<IContact>> GetAllAsync()
+        public async Task<IEnumerable<Contact>> GetAllAsync()
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
 
@@ -62,7 +62,14 @@ namespace ContactBookAPI.Repository
             return result?.Select(item => item.Export());
         }
 
-        public async Task<IEnumerable<IContact>> GetAsync(int pageRows, int pageNumber, string searchString)
+        public async Task<Contact> GetByIdAsync(int id)
+        {
+            var list = await GetAllAsync();
+
+            return list.ToList().Where(item => item.Id == id).FirstOrDefault();
+        }
+
+        public async Task<IEnumerable<Contact>> GetAsync(int pageRows, int pageNumber, string searchString)
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
 
@@ -72,7 +79,7 @@ namespace ContactBookAPI.Repository
             return result?.Select(item => item.Export());
         }
 
-        public async Task<IEnumerable<IContact>> GetByCompanyAndContactBook(int companyId, int contactBookId)
+        public async Task<IEnumerable<Contact>> GetByCompanyAndContactBook(int companyId, int contactBookId)
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
 
@@ -85,7 +92,19 @@ namespace ContactBookAPI.Repository
             return result?.Select(item => item.Export());
         }
 
+        public async Task DeleteAsync(int id)
+        {
+            using var connection = new SqliteConnection(databaseConfig.ConnectionString);
+            connection.Open();
+            using var transaction = connection.BeginTransaction();
 
+            var sql = new StringBuilder();
+            sql.AppendLine("DELETE FROM Contact WHERE Id = @id;");
+
+            await connection.ExecuteAsync(sql.ToString(), new { id }, transaction);
+            transaction.Commit();
+            connection.Close();
+        }
         public async Task<int> RegistersCount(string searchString)
         {
             using var connection = new SqliteConnection(databaseConfig.ConnectionString);
@@ -121,55 +140,7 @@ namespace ContactBookAPI.Repository
             var records = csv.GetRecords<ContactCsv>();
 
             return records.ToList();
-        }
-
-        public async Task UploadFile(List<ContactCsv> records, List<int> companyList, List<int> contactIdList)
-        {
-            var contatos = new List<Contact>();
-            int companyIdAux = 0;
-
-            foreach (var record in records)
-            {
-                foreach (var company in companyList)
-                {
-                    if (Convert.ToInt32(company) == record.CompanyId)
-                    {
-                        companyIdAux = record.CompanyId;
-                        break;
-                    }
-                    else
-                    {
-                        companyIdAux = 0;
-                    }
-                }
-                contatos.Add(new Contact(record.Id,
-                                         record.ContactBookId,
-                                         companyIdAux,
-                                         record.Name,
-                                         record.Phone,
-                                         record.Email,
-                                         record.Address));
-            }
-
-            foreach (var contato in contatos)
-            {
-                if (contactIdList.Contains(contato.Id))
-                {
-                    if (contato.ContactBookId > 0)
-                    {
-                        await UpdateAsync(contato.Id, contato);
-                    }
-                }
-                else
-                {
-                    if (contato.ContactBookId > 0)
-                    {
-                        await SaveAsync(contato);
-                    }
-
-                }
-            }
-        }
+        }   
     }
 }
 

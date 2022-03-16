@@ -27,13 +27,13 @@ namespace ContactBookAPI.Dao
         {
         }
 
-        public ContactBookDao(IContactBook contactBook)
+        public ContactBookDao(ContactBook contactBook)
         {
             Id = contactBook.Id;
             Name = contactBook.Name;
             Contacts = contactBook.Contacts;
         }
 
-        public IContactBook Export() => new ContactBook(Id, Name, Contacts);
+        public ContactBook Export() => new ContactBook(Id, Name, Contacts);
     }
 }

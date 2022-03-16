@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace ContactBookAPI.Core.Domain.Communication
 {
-    public class ContactBookResponse : BaseResponse<IContactBook>
+    public class ContactBookResponse : BaseResponse<Domain.ContactBook.ContactBook>
     {
         /// <summary>
         /// Creates a success response.
         /// </summary>
         /// <param name="contactBook">Saved category.</param>
         /// <returns>Response.</returns>
-        public ContactBookResponse(IContactBook contactBook) : base(contactBook)
+        public ContactBookResponse(Domain.ContactBook.ContactBook contactBook) : base(contactBook)
         { }
 
         /// <summary>
