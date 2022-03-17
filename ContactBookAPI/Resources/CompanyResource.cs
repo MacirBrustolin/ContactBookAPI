@@ -10,6 +10,6 @@ namespace ContactBookAPI.Resources
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public IContactBook ContactBook { get; set; }
+        //public ContactBookResource ContactBook { get; set; }
     }
 }

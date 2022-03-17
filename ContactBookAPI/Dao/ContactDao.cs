@@ -17,7 +17,7 @@ namespace ContactBookAPI.Dao
     [System.ComponentModel.DataAnnotations.Schema.Table("Contact")]
     public class ContactDao : IContact
     {
-        [Dapper.Contrib.Extensions.Key]
+        [Required]
         public int Id { get; set; }
         [Required]
         public int ContactBookId { get; set; }
@@ -51,6 +51,6 @@ namespace ContactBookAPI.Dao
             Address = contact.Address;
         }
 
-        public Contact Export() => new Contact(Id, ContactBookId, ContactBook, CompanyId, Company, Name, Phone, Email, Address);
+        public Contact Export() => new(Id, ContactBookId, ContactBook, CompanyId, Company, Name, Phone, Email, Address);
     }
 }

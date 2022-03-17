@@ -113,7 +113,7 @@ namespace ContactBookAPI.Controllers
         /// </summary>
         /// <param name="file">CSV Contact file.</param>
         /// <returns>Response for the request.</returns>
-        [ProducesResponseType(typeof(CompanyResource), 201)]
+        [ProducesResponseType(typeof(ContactResource), 201)]
         [ProducesResponseType(typeof(ErrorResource), 400)]
         [HttpPost]
         public async Task<IActionResult> UploadFile(IFormFile file)
